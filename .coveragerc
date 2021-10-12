@@ -1,8 +1,0 @@
-[run]
-branch = True
-source = mcmodels
-include = */mcmodels/*
-
-[report]
-omit =
-	*/setup.py
