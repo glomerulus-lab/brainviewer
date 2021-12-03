@@ -8,6 +8,7 @@ http://mouse-connectivity-models.readthedocs.io/en/latest/
 import os
 import logging
 import subprocess
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,6 +16,7 @@ import matplotlib.cm
 
 from mcmodels.core import Mask, VoxelModelCache
 from mcmodels.core.cortical_map import CorticalMap
+from matplotlib.widgets import Button
 
 
 # file path where the data files will be downloaded
@@ -23,7 +25,10 @@ MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 OUTPUT_DIR = 'images'
 GIF_CONVERT_COMMAND = 'convert -delay 3x100 -size 50x50 *.png output.gif'
 
-top_down_overlay = plt.imread("cortical_map_top_down.png")
+top_down_overlay = plt.imread("../../mouse_connectivity_models/examples/movie/cortical_map_top_down.png")
+
+global_x = 0
+global_y = 0
 
 def main():
     # caching object for downloading/loading connectivity/model data
@@ -104,11 +109,63 @@ def plot_image(x, y):
         cbar.ax.tick_params(labelsize=6) 
         plt.tight_layout()
 
+        global global_x
+        global global_y
+
+
+        global_x = x
+        global_y = y
+
+def on_arrow(event):
+    global global_x, global_y
+    if event.key == 'up':
+        plt.clf()
+        plot_image(global_x, global_y - 1)
+        global_y -= 1
+        init_buttons()
+        plt.draw()
+    elif event.key == 'down':
+        plt.clf()
+        plot_image(global_x, global_y + 1)
+        global_y += 1
+        init_buttons()
+        plt.draw()
+    elif event.key == 'left':
+        plt.clf()
+        plot_image(global_x - 1, global_y)
+        global_x -= 1
+        init_buttons()
+        plt.draw()
+    elif event.key == 'right':
+        plt.clf()
+        plot_image(global_x + 1, global_y)
+        global_x += 1
+        init_buttons()
+        plt.draw()
+
 def on_press(event):
     plt.clf()
     print('you pressed', event.button, event.xdata, event.ydata)
     plot_image(int(round(event.xdata)), int(round(event.ydata)))
+    init_buttons()
     plt.draw()
+
+def init_buttons():
+    # UI Setup
+    ax_up = plt.axes([0.1, 0.05, 0.1, 0.075])
+    ax_down = plt.axes([0.21, 0.05, 0.1, 0.075])
+    ax_left = plt.axes([0.32, 0.05, 0.1, 0.075])
+    ax_right = plt.axes([0.43, 0.05, 0.1, 0.075])
+    up_button = Button(ax_up, 'Up')
+    #up_button.on_clicked(up_action)
+    down_button = Button(ax_down, 'Down')
+    #down_button.on_clicked(down_action)
+    left_button = Button(ax_left, 'Left')
+    #left_button.on_clicked(left_action)
+    right_button = Button(ax_right, 'Right')
+    #right_button.on_clicked(right_action)
+
+
     
 if __name__ == '__main__':
     # caching object for downloading/loading connectivity/model data
@@ -136,10 +193,14 @@ if __name__ == '__main__':
     # only want R hemisphere
     lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
     lookup[:lookup.shape[0]//2, :] = -1
-
+    
     #Begin image plotting and mouse tracking
     fig, ax = plt.subplots(figsize=(6, 6))
     plot_image(-1,-1)
-    cid = fig.canvas.mpl_connect('button_press_event', on_press)
+    cid_cursor = fig.canvas.mpl_connect('button_press_event', on_press)
+    cid_keys = fig.canvas.mpl_connect('key_press_event', on_arrow)
+
+    init_buttons()
+
     plt.show()
     plt.draw()
