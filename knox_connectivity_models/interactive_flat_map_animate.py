@@ -104,8 +104,8 @@ def plot_image(x, y):
         plt.pcolormesh(pixel, zorder=2, cmap=cmap_pixel, vmin=0, vmax=1)
         plt.gca().invert_yaxis() # flips yaxis
         plt.axis('off')
-
-        #plot overlay for topdown
+        
+        # plot overlay
         extent = plt.gca().get_xlim() + plt.gca().get_ylim()
         plt.imshow(top_down_overlay, interpolation="nearest", extent=extent, zorder=3)
         
@@ -116,20 +116,20 @@ def plot_image(x, y):
         plt.tight_layout()
 
 def on_press(event):
-    plt.clf()
-    print('you pressed', event.button, event.xdata, event.ydata)
-    plot_image(int(round(event.xdata)), int(round(event.ydata)))
-    plt.draw()
+    x = int(round(event.xdata))
+    y = int(round(event.ydata))
+    if (lookup[x][y] in lookup[lookup > -1]):
+        plt.clf()
+        print('you pressed', event.button, x, y)
+        plot_image(x, y)
+        plt.draw()
+    else:
+        print('you pressed', event.button, x, y, 'which is out of bounds.')
     
 if __name__ == '__main__':
-
-
-
-    
-    
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
-    
+
     # load voxel model
     voxel_array, source_mask, target_mask = cache.get_voxel_connectivity_array()
     reference_shape = source_mask.reference_space.annotation.shape
