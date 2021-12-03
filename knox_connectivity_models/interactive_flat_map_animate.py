@@ -9,6 +9,8 @@ import os
 import logging
 import subprocess
 
+import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm
@@ -22,6 +24,11 @@ MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              '../connectivity', 'mcmodels_manifest.json')
 OUTPUT_DIR = 'images'
 GIF_CONVERT_COMMAND = 'convert -delay 3x100 -size 50x50 *.png output.gif'
+mapper = CorticalMap(projection='top_view')
+
+if len(sys.argv) == 1:
+    print('usage: python interactive_flat_map_animate.py  topview | flatmap')
+    exit()
 
 top_down_overlay = plt.imread("cortical_map_top_down.png")
 
@@ -38,6 +45,9 @@ def main():
     # 2D Cortical Surface Mapper
     # projection: can change to "flatmap" if desired
     mapper = CorticalMap(projection='top_view')
+    if sys.argv[1] == 'flatmap':
+        mapper = CorticalMap(projection='dorsal_flatmap')
+
     # quick hack to fix bug
     mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
     mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
@@ -64,6 +74,7 @@ def plot_image(x, y):
     
     i, val = 0, lookup[x][y]
     # get the mean path voxel
+    print("val = %d" % val)
     print("Evaluating pixel %d" % i)
     path = mapper.paths[val][mapper.paths[val].nonzero()]
     path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
@@ -93,8 +104,7 @@ def plot_image(x, y):
         plt.pcolormesh(pixel, zorder=2, cmap=cmap_pixel, vmin=0, vmax=1)
         plt.gca().invert_yaxis() # flips yaxis
         plt.axis('off')
-        
-        # plot overlay
+
         extent = plt.gca().get_xlim() + plt.gca().get_ylim()
         plt.imshow(top_down_overlay, interpolation="nearest", extent=extent, zorder=3)
         
@@ -111,9 +121,14 @@ def on_press(event):
     plt.draw()
     
 if __name__ == '__main__':
+
+
+
+    
+    
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
-
+    
     # load voxel model
     voxel_array, source_mask, target_mask = cache.get_voxel_connectivity_array()
     reference_shape = source_mask.reference_space.annotation.shape
@@ -122,7 +137,9 @@ if __name__ == '__main__':
     # 2D Cortical Surface Mapper
     # projection: can change to "flatmap" if desired
     mapper = CorticalMap(projection='top_view')
-    
+    if sys.argv[1] == 'flatmap':
+        mapper = CorticalMap(projection='dorsal_flatmap')
+        
     # quick hack to fix bug
     mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
     mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
@@ -139,7 +156,10 @@ if __name__ == '__main__':
 
     #Begin image plotting and mouse tracking
     fig, ax = plt.subplots(figsize=(6, 6))
-    plot_image(-1,-1)
+    if sys.argv[1] == 'top_view':
+        plot_image(-1,-1)
+    if sys.argv[1] == 'flatmap':
+        plot_image(200,80)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
     plt.show()
     plt.draw()
