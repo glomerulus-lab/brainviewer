@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
     #Begin image plotting and mouse tracking
     fig, ax = plt.subplots(figsize=(6, 6))
-    plot_image(-1,-1)
+    plot_image(80,100)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
     plt.show()
     plt.draw()
