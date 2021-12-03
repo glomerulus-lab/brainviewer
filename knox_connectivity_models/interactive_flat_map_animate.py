@@ -105,6 +105,7 @@ def plot_image(x, y):
         plt.gca().invert_yaxis() # flips yaxis
         plt.axis('off')
 
+        #plot overlay for topdown
         extent = plt.gca().get_xlim() + plt.gca().get_ylim()
         plt.imshow(top_down_overlay, interpolation="nearest", extent=extent, zorder=3)
         
@@ -156,7 +157,7 @@ if __name__ == '__main__':
 
     #Begin image plotting and mouse tracking
     fig, ax = plt.subplots(figsize=(6, 6))
-    if sys.argv[1] == 'top_view':
+    if sys.argv[1] == 'topview':
         plot_image(-1,-1)
     if sys.argv[1] == 'flatmap':
         plot_image(200,80)
