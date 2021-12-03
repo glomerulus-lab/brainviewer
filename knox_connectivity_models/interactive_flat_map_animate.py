@@ -105,10 +105,15 @@ def plot_image(x, y):
         plt.tight_layout()
 
 def on_press(event):
-    plt.clf()
-    print('you pressed', event.button, event.xdata, event.ydata)
-    plot_image(int(round(event.xdata)), int(round(event.ydata)))
-    plt.draw()
+    x = int(round(event.xdata))
+    y = int(round(event.ydata))
+    if (lookup[x][y] in lookup[lookup > -1]):
+        plt.clf()
+        print('you pressed', event.button, x, y)
+        plot_image(x, y)
+        plt.draw()
+    else:
+        print('you pressed', event.button, x, y, 'which is out of bounds.')
     
 if __name__ == '__main__':
     # caching object for downloading/loading connectivity/model data
