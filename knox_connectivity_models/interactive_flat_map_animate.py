@@ -10,6 +10,7 @@ import logging
 import subprocess
 
 import sys
+from PIL.Image import init
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ import matplotlib.cm
 
 from mcmodels.core import Mask, VoxelModelCache
 from mcmodels.core.cortical_map import CorticalMap
+from matplotlib.widgets import Button
 
 
 # file path where the data files will be downloaded
@@ -122,10 +124,16 @@ def on_press(event):
         plt.clf()
         print('you pressed', event.button, x, y)
         plot_image(x, y)
+        init_buttons()
         plt.draw()
     else:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
     
+
+def init_buttons():
+    ax_swtich = plt.axes([0.1, 0.05, 0.1, 0.075])
+    switch_button = Button(ax_swtich, 'Switch')
+
 if __name__ == '__main__':
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
@@ -162,5 +170,8 @@ if __name__ == '__main__':
     if sys.argv[1] == 'flatmap':
         plot_image(200,80)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
+
+    init_buttons()
+
     plt.show()
     plt.draw()
