@@ -103,9 +103,11 @@ def on_press(event):
     else:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
     
-
+# initializes buttons
 def init_buttons():
+    # axis for switch_button
     ax_swtich = plt.axes([0.1, 0.05, 0.1, 0.075])
+    # button reference
     switch_button = Button(ax_swtich, 'Switch')
 
 if __name__ == '__main__':
