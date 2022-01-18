@@ -26,43 +26,12 @@ OUTPUT_DIR = 'images'
 GIF_CONVERT_COMMAND = 'convert -delay 3x100 -size 50x50 *.png output.gif'
 mapper = CorticalMap(projection='top_view')
 
+# check that an argument provided for topview or flatmap version
 if len(sys.argv) == 1:
     print('usage: python interactive_flat_map_animate.py  topview | flatmap')
     exit()
 
 top_down_overlay = plt.imread("cortical_map_top_down.png")
-
-def main():
-    # caching object for downloading/loading connectivity/model data
-    cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
-
-    # load voxel model
-    voxel_array, source_mask, target_mask = cache.get_voxel_connectivity_array()
-
-    reference_shape = source_mask.reference_space.annotation.shape
-    vmax = 1.2 * np.percentile(voxel_array.nodes, 99)
-
-    # 2D Cortical Surface Mapper
-    # projection: can change to "flatmap" if desired
-    mapper = CorticalMap(projection='top_view')
-    if sys.argv[1] == 'flatmap':
-        mapper = CorticalMap(projection='dorsal_flatmap')
-
-    # quick hack to fix bug
-    mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
-    mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
-
-    # colormaps
-    cmap_view = matplotlib.cm.inferno
-    cmap_pixel = matplotlib.cm.cool
-    cmap_view.set_bad(alpha=0)
-    cmap_pixel.set_bad(alpha=0)
-
-    # only want R hemisphere
-    lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
-    lookup[:lookup.shape[0]//2, :] = -1
-    return lookup, mapper, voxel_array, source_mask, target_mask, reference_shape, cmap_view, vmax
-
 
 def plot_image(x, y): 
     '''
@@ -116,6 +85,11 @@ def plot_image(x, y):
         plt.tight_layout()
 
 def on_press(event):
+    '''
+    Gets injection coordinates (x,y) and calls function to plot projection.
+    Parameters:
+        event
+    '''
     x = int(round(event.xdata))
     y = int(round(event.ydata))
     if (lookup[x][y] in lookup[lookup > -1]):
