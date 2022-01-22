@@ -27,6 +27,9 @@ MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 OUTPUT_DIR = 'images'
 GIF_CONVERT_COMMAND = 'convert -delay 3x100 -size 50x50 *.png output.gif'
 mapper = CorticalMap(projection='top_view')
+lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
+lookup[:lookup.shape[0]//2, :] = -1
+
 current_overlay = "init"
 
 if len(sys.argv) == 1:
@@ -34,6 +37,7 @@ if len(sys.argv) == 1:
     exit()
 
 top_down_overlay = plt.imread("cortical_map_top_down.png")
+flat_map_overlay = plt.imread("transparent.png")
 
 def plot_image(x, y): 
     '''
@@ -42,7 +46,8 @@ def plot_image(x, y):
         x (int)
         y (int)
     '''
-    
+
+    global switch_button
     i, val = 0, lookup[x][y]
     # get the mean path voxel
     print("val = %d" % val)
@@ -76,17 +81,23 @@ def plot_image(x, y):
         plt.gca().invert_yaxis() # flips yaxis
         plt.axis('off')
         
-        # plot top down overlay as appropriate 
         extent = plt.gca().get_xlim() + plt.gca().get_ylim()
         if current_overlay == 'topview':
+            # plot top down overlay as appropriate 
             plt.imshow(top_down_overlay, interpolation="nearest", extent=extent, zorder=3)
-
+        else:
+            #empty overlay for flatmap
+            plt.imshow(flat_map_overlay, interpolation="nearest", extent=extent, zorder=3)
         # add colorbar
         cbar = plt.colorbar(im, shrink=0.3, use_gridspec=True, format="%1.1e")
         cbar.set_ticks([0, 0.0004, 0.0008, 0.0012])
         cbar.ax.tick_params(labelsize=6) 
         plt.tight_layout()
 
+        # reinitialize buttons
+        switch_button = init_buttons()
+
+        
 def on_press(event):
     x = int(round(event.xdata))
     y = int(round(event.ydata))
@@ -94,7 +105,7 @@ def on_press(event):
         plt.clf()
         print('you pressed', event.button, x, y)
         plot_image(x, y)
-        switch_button = init_buttons()
+
         plt.draw()
     elif x > 1 or y > 1:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
@@ -102,26 +113,36 @@ def on_press(event):
 def on_switch(event):
     global current_overlay
     global mapper
+    global lookup
     print("\n\nOld Overlay : ", current_overlay)
-    #clear the old plot?
+    # clear the old plot?
     plt.clf()
-    #handle switching from flatmap to topview
+    # handle switching from flatmap to topview
     if current_overlay == 'flatmap':
         current_overlay = 'topview'
         mapper = CorticalMap(projection='top_view')
+        # quick hack to fix bug
+        mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
+        mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
+        # get the new lookup
+        lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
+        lookup[:lookup.shape[0]//2, :] = -1
         plot_image(-1, -1)
-    #handle switching from topview to flatmap
-    if current_overlay == 'topview':
+    # handle switching from topview to flatmap
+    elif current_overlay == 'topview':
         current_overlay = 'flatmap'
         mapper = CorticalMap(projection='dorsal_flatmap')
+        # get the new lookup
+        lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
+        lookup[:lookup.shape[0]//2, :] = -1
         plot_image(200,80)
-    #reinitialize button
-    switch_button = init_buttons()
-    #draw the new image
+    
+    # draw the new image
     plt.draw()
     print("\n\nNew Overlay : ", current_overlay)
         
 def init_buttons():
+    global switch_button
     ax_switch = plt.axes([0.1, 0.05, 0.1, 0.075])
     switch_button = Button(ax_switch, 'Switch')
     switch_button.on_clicked(on_switch)
