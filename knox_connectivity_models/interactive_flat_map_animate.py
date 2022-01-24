@@ -32,12 +32,15 @@ lookup[:lookup.shape[0]//2, :] = -1
 
 current_overlay = "init"
 
+# check that an argument provided for topview or flatmap version
 if len(sys.argv) == 1:
     print('usage: python interactive_flat_map_animate.py  topview | flatmap')
     exit()
 
 top_down_overlay = plt.imread("cortical_map_top_down.png")
+
 flat_map_overlay = plt.imread("transparent.png")
+
 
 def plot_image(x, y): 
     '''
@@ -99,6 +102,11 @@ def plot_image(x, y):
 
         
 def on_press(event):
+    '''
+    Gets injection coordinates (x,y) and calls function to plot projection.
+    Parameters:
+        event
+    '''
     x = int(round(event.xdata))
     y = int(round(event.ydata))
     if (lookup[x][y] in lookup[lookup > -1]):
@@ -110,6 +118,7 @@ def on_press(event):
     elif x > 1 or y > 1:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
     
+
 def on_switch(event):
     global current_overlay
     global mapper
@@ -147,7 +156,7 @@ def init_buttons():
     switch_button = Button(ax_switch, 'Switch')
     switch_button.on_clicked(on_switch)
     return switch_button
-    
+
 if __name__ == '__main__':
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
