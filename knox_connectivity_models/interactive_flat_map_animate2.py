@@ -47,7 +47,8 @@ def plot_image(x, y):
     
     filename = "images" + i.zfill(5) + ".png"
     print(filename)
-    img = plt.imread('images/00000.png')
+    img_path = os.path.join(os.getcwd(), 'images', '00000.png');
+    img = plt.imread('img_path')
     plt.imshow(img, interpolation="nearest", zorder=3)
 
     
@@ -64,7 +65,7 @@ def on_press(event):
     if (lookup[x][y] in lookup[lookup > -1]):
         plt.clf()
         print('you pressed', event.button, x, y)
-        img = plt.imread('/home/stillwj3/anaconda3/local_mouse/mouse_connectivity_models/examples/movie/images/00001.png')
+        img = plt.imread('/images/00000.png')
         #plt.gca().set_ylim(114)
         #plt.gca().set_xlim(132)
         #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
@@ -108,18 +109,20 @@ if __name__ == '__main__':
     lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
     lookup[:lookup.shape[0]//2, :] = -1
 
-    print(len(lookup))
-
     #Begin image plotting and mouse tracking
-    fig, ax = plt.subplots(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(6, 7))
+    #plt.gca().invert_yaxis()
     plt.axis('off')
+    #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
+    
     if sys.argv[1] == 'topview':
-        img = plt.imread('/home/stillwj3/anaconda3/local_mouse/mouse_connectivity_models/examples/movie/0000.png')
+        img_path = os.path.join(os.getcwd(), 'images', '00000.png');
+        img = plt.imread(img_path)
         #plt.gca().set_ylim(114)
         #plt.gca().set_xlim(132)
         #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
-        plt.imshow(img, interpolation="nearest", zorder=3, aspect =)
-    if sys.argv[1] == 'flatmap':
+        plt.imshow(img, interpolation="nearest", zorder=3)
+    elif sys.argv[1] == 'flatmap':
         plot_image(200,80)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
 
