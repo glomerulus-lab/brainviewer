@@ -58,14 +58,16 @@ def on_press(event):
     Parameters:
         event
     '''
-    x = int(round(event.xdata))
-    y = int(round(event.ydata))
+    #scale the x, y coords down to fit the image resolution
+    x = int(round(event.xdata) / 10)
+    y = int(round(event.ydata) / 10)
     #print("Coordinates: ", x, y)
   
     if (lookup[x][y] in lookup[lookup > -1]):
         plt.clf()
         print('you pressed', event.button, x, y)
-        img = plt.imread('/images/00000.png')
+        img_path = os.path.join(os.getcwd(), 'images', '00000.png');
+        img = plt.imread(img_path)
         #plt.gca().set_ylim(114)
         #plt.gca().set_xlim(132)
         #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
