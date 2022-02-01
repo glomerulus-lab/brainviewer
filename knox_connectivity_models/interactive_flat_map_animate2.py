@@ -8,6 +8,8 @@ http://mouse-connectivity-models.readthedocs.io/en/latest/
 import os
 import logging
 import subprocess
+from os.path import exists
+
 
 import sys
 from PIL.Image import init
@@ -42,14 +44,28 @@ def plot_image(x, y):
         x (int)
         y (int)
     '''
-    
+
     i, val = 0, lookup[x][y]
-    
-    filename = "images" + i.zfill(5) + ".png"
+    print("coords = ", x, y)
+    print("val = ", val)    
+    filename = str(val) + ".png"
     print(filename)
-    img_path = os.path.join(os.getcwd(), 'images', '00000.png');
-    img = plt.imread('img_path')
-    plt.imshow(img, interpolation="nearest", zorder=3)
+    img_path = os.path.join(os.getcwd(), 'images', filename);
+    file_exists = exists(img_path)
+    print(file_exists)
+    if file_exists:
+        plt.clf()
+        img = plt.imread(img_path)
+        #plt.gca().set_ylim(114)
+        #plt.gca().set_xlim(132)
+        #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
+        plt.axis('off')
+        plt.imshow(img, interpolation="nearest",zorder=3)
+        init_buttons()
+        plt.draw()
+
+
+
 
     
 def on_press(event):
@@ -61,21 +77,11 @@ def on_press(event):
     #scale the x, y coords down to fit the image resolution
     x = int(round(event.xdata) / 10)
     y = int(round(event.ydata) / 10)
-    #print("Coordinates: ", x, y)
-  
+
+    
     if (lookup[x][y] in lookup[lookup > -1]):
-        plt.clf()
         print('you pressed', event.button, x, y)
-        img_path = os.path.join(os.getcwd(), 'images', '00000.png');
-        img = plt.imread(img_path)
-        #plt.gca().set_ylim(114)
-        #plt.gca().set_xlim(132)
-        #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
-        plt.axis('off')
-        plt.imshow(img, interpolation="nearest",zorder=3)
-        #plot_image(x, y)
-        init_buttons()
-        plt.draw()
+        plot_image(x, y)
     else:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
 
@@ -118,7 +124,7 @@ if __name__ == '__main__':
     #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
     
     if sys.argv[1] == 'topview':
-        img_path = os.path.join(os.getcwd(), 'images', '00000.png');
+        img_path = os.path.join(os.getcwd(), 'images', '104.png');
         img = plt.imread(img_path)
         #plt.gca().set_ylim(114)
         #plt.gca().set_xlim(132)
