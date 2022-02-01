@@ -141,9 +141,8 @@ def on_press(event):
     
 
 def on_switch(event):
-    global current_overlay
-    global mapper
-    global lookup
+    global current_overlay, mapper, lookup, x_coord, y_coord
+
     # clear the old plot
     plt.clf()
     # handle switching from flatmap to topview
@@ -156,6 +155,8 @@ def on_switch(event):
         # get the new lookup
         lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
         lookup[:lookup.shape[0]//2, :] = -1
+        x_coord = -1
+        y_coord = -1
         plot_image(-1, -1)
     # handle switching from topview to flatmap
     elif current_overlay == 'topview':
@@ -166,6 +167,8 @@ def on_switch(event):
         # get the new lookup
         lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
         lookup[:lookup.shape[0]//2, :] = -1
+        x_coord = 200
+        y_coord = 80
         plot_image(200,80)
     
             
