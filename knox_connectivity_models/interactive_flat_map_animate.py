@@ -24,8 +24,6 @@ from matplotlib.widgets import Button
 # file path where the data files will be downloaded
 MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              '../connectivity', 'mcmodels_manifest.json')
-OUTPUT_DIR = 'images'
-GIF_CONVERT_COMMAND = 'convert -delay 3x100 -size 50x50 *.png output.gif'
 mapper = CorticalMap(projection='top_view')
 lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
 lookup[:lookup.shape[0]//2, :] = -1
@@ -33,7 +31,7 @@ lookup[:lookup.shape[0]//2, :] = -1
 current_overlay = "init"
 
 # check that an argument provided for topview or flatmap version
-if len(sys.argv) == 1:
+if len(sys.argv) != 2:
     print('usage: python interactive_flat_map_animate.py  topview | flatmap')
     exit()
 
@@ -70,7 +68,6 @@ def plot_image(x, y):
         # get voxel expression
         volume = target_mask.fill_volume_where_masked(np.zeros(reference_shape),
                                                         voxel_array[row_idx])
-
         # map to cortical surface
         flat_view = mapper.transform(volume, fill_value=np.nan)
 
@@ -102,6 +99,8 @@ def plot_image(x, y):
 
         # reinitialize buttons
         switch_button = init_buttons()
+        plt.draw()
+
 
 def on_key(event):
     print(event.key + " is pressed")
@@ -119,9 +118,8 @@ def on_key(event):
         return
     plt.clf()
     plot_image(x_coord, y_coord)
-    plt.draw()
-
-
+    
+    
 def on_press(event):
     '''
     Gets injection coordinates (x,y) and calls function to plot projection.
@@ -138,17 +136,14 @@ def on_press(event):
         plot_image(x, y)
         x_coord = x
         y_coord = y
-        plt.draw()
     elif x > 1 or y > 1:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
     
 
 def on_switch(event):
-    global current_overlay
-    global mapper
-    global lookup
-    print("\n\nOld Overlay : ", current_overlay)
-    # clear the old plot?
+    global current_overlay, mapper, lookup, x_coord, y_coord
+
+    # clear the old plot
     plt.clf()
     # handle switching from flatmap to topview
     if current_overlay == 'flatmap':
@@ -160,20 +155,23 @@ def on_switch(event):
         # get the new lookup
         lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
         lookup[:lookup.shape[0]//2, :] = -1
+        x_coord = -1
+        y_coord = -1
         plot_image(-1, -1)
     # handle switching from topview to flatmap
     elif current_overlay == 'topview':
         current_overlay = 'flatmap'
         mapper = CorticalMap(projection='dorsal_flatmap')
+        mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
+        mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
         # get the new lookup
         lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
         lookup[:lookup.shape[0]//2, :] = -1
+        x_coord = 200
+        y_coord = 80
         plot_image(200,80)
     
-    # draw the new image
-    plt.draw()
-    print("\n\nNew Overlay : ", current_overlay)
-        
+            
 def init_buttons():
     global switch_button
     ax_switch = plt.axes([0.1, 0.05, 0.1, 0.075])
@@ -192,8 +190,6 @@ if __name__ == '__main__':
 
     # 2D Cortical Surface Mapper
     # projection: can change to "flatmap" if desired
-    #if sys.argv[1] == 'topview':
-    #    mapper = CorticalMap(projection='top_view')
     if sys.argv[1] == 'flatmap':
         mapper = CorticalMap(projection='dorsal_flatmap')
         
@@ -224,7 +220,3 @@ if __name__ == '__main__':
     fig.canvas.mpl_connect('button_press_event', on_press)
     fig.canvas.mpl_connect('key_press_event', on_key)
     plt.show()
-    plt.draw()
-    
-
-    
