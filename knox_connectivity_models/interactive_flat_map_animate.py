@@ -39,6 +39,9 @@ top_down_overlay = plt.imread("cortical_map_top_down.png")
 
 flat_map_overlay = plt.imread("transparent.png")
 
+x_coord = -1
+y_coord = -1
+
 
 def plot_image(x, y): 
     '''
@@ -47,7 +50,7 @@ def plot_image(x, y):
         x (int)
         y (int)
     '''
-
+    
     global switch_button
     i, val = 0, lookup[x][y]
     # get the mean path voxel
@@ -97,20 +100,42 @@ def plot_image(x, y):
         # reinitialize buttons
         switch_button = init_buttons()
         plt.draw()
-        
-        
+
+
+def on_key(event):
+    print(event.key + " is pressed")
+    global x_coord, y_coord
+    if event.key == 'up':
+        y_coord -= 1
+    elif event.key == 'down':
+        y_coord += 1
+    elif event.key == 'left':
+        x_coord -= 1
+    elif event.key == 'right':
+        x_coord += 1
+    else:
+        print(event.key + " is an invalid key")
+        return
+    plt.clf()
+    plot_image(x_coord, y_coord)
+    
+    
 def on_press(event):
     '''
     Gets injection coordinates (x,y) and calls function to plot projection.
     Parameters:
         event
     '''
+    
     x = int(round(event.xdata))
     y = int(round(event.ydata))
     if (lookup[x][y] in lookup[lookup > -1]):
+        global x_coord, y_coord
         plt.clf()
         print('you pressed', event.button, x, y)
         plot_image(x, y)
+        x_coord = x
+        y_coord = y
     elif x > 1 or y > 1:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
     
@@ -190,4 +215,5 @@ if __name__ == '__main__':
 
     switch_button = init_buttons()
     fig.canvas.mpl_connect('button_press_event', on_press)
+    fig.canvas.mpl_connect('key_press_event', on_key)
     plt.show()
