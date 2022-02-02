@@ -10,6 +10,7 @@ import logging
 import subprocess
 from os.path import exists
 import time
+start = time.perf_counter()
 
 import sys
 from PIL.Image import init
@@ -97,7 +98,7 @@ def init_buttons():
     switch_button = Button(ax_swtich, 'Switch')
 
 if __name__ == '__main__':
-    start = time.perf_counter()
+    #start = time.perf_counter()
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
 
