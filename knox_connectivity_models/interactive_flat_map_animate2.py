@@ -59,18 +59,14 @@ def on_press(event):
     '''
     x = int(round(event.xdata))
     y = int(round(event.ydata))
-    #print("Coordinates: ", x, y)
+    print("Coordinates: ", x, y)
   
     if (lookup[x][y] in lookup[lookup > -1]):
         plt.clf()
         print('you pressed', event.button, x, y)
         img = plt.imread('/home/stillwj3/anaconda3/local_mouse/mouse_connectivity_models/examples/movie/images/00001.png')
-        #plt.gca().set_ylim(114)
-        #plt.gca().set_xlim(132)
-        #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
         plt.axis('off')
         plt.imshow(img, interpolation="nearest",zorder=3)
-        #plot_image(x, y)
         init_buttons()
         plt.draw()
     else:
@@ -114,11 +110,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=(6, 6))
     plt.axis('off')
     if sys.argv[1] == 'topview':
-        img = plt.imread('/home/stillwj3/anaconda3/local_mouse/mouse_connectivity_models/examples/movie/0000.png')
-        #plt.gca().set_ylim(114)
-        #plt.gca().set_xlim(132)
-        #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
-        plt.imshow(img, interpolation="nearest", zorder=3, aspect =)
+        img = plt.imread('images/00000.png')
+        plt.imshow(img, interpolation="nearest", zorder=3)
     if sys.argv[1] == 'flatmap':
         plot_image(200,80)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
