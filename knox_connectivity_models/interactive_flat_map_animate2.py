@@ -9,7 +9,7 @@ import os
 import logging
 import subprocess
 from os.path import exists
-
+import time
 
 import sys
 from PIL.Image import init
@@ -81,7 +81,10 @@ def on_press(event):
     
     if (lookup[x][y] in lookup[lookup > -1]):
         print('you pressed', event.button, x, y)
+        start = time.perf_counter()
         plot_image(x, y)
+        stop = time.perf_counter()
+        print("Plot Time : ", stop - start)
     else:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
 
@@ -94,6 +97,7 @@ def init_buttons():
     switch_button = Button(ax_swtich, 'Switch')
 
 if __name__ == '__main__':
+    start = time.perf_counter()
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
 
@@ -135,6 +139,7 @@ if __name__ == '__main__':
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
 
     init_buttons()
-
+    stop = time.perf_counter()
+    print("Startup Time : ", stop-start)
     plt.show()
     plt.draw()
