@@ -8,6 +8,7 @@ http://mouse-connectivity-models.readthedocs.io/en/latest/
 import os
 import logging
 import subprocess
+import time
 
 import sys
 from PIL.Image import init
@@ -133,7 +134,10 @@ def on_press(event):
         global x_coord, y_coord
         plt.clf()
         print('you pressed', event.button, x, y)
+        start = time.perf_counter()
         plot_image(x, y)
+        stop = time.perf_counter()
+        print("Plot Time: ", stop - start)
         x_coord = x
         y_coord = y
     elif x > 1 or y > 1:
@@ -180,6 +184,7 @@ def init_buttons():
     return switch_button
 
 if __name__ == '__main__':
+    start = time.perf_counter()
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
 
@@ -219,4 +224,7 @@ if __name__ == '__main__':
     switch_button = init_buttons()
     fig.canvas.mpl_connect('button_press_event', on_press)
     fig.canvas.mpl_connect('key_press_event', on_key)
+    print("Startup time : ", time.perf_counter() - start)
     plt.show()
+
+
