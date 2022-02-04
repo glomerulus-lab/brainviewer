@@ -7,6 +7,7 @@ http://mouse-connectivity-models.readthedocs.io/en/latest/
 
 import os
 import logging
+from re import X
 import subprocess
 
 import sys
@@ -30,6 +31,8 @@ mapper = CorticalMap(projection='top_view')
 lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
 lookup[:lookup.shape[0]//2, :] = -1
 
+paths = mapper.paths.copy()
+
 current_overlay = "init"
 
 # check that an argument provided for topview or flatmap version
@@ -44,6 +47,49 @@ flat_map_overlay = plt.imread("transparent.png")
 x_coord = -1
 y_coord = -1
 
+finalPath = [-1,-1,-1]
+
+def top_to_flat(x,y):
+    global mapper
+    global lookup
+    global paths
+    ind = np.where(lookup == 30000)
+
+    print("index: ", ind)
+    x_flat = 0
+    y_flat = 0
+    
+    for i, val in enumerate(lookup[lookup > -1]):
+        path = mapper.paths[val][mapper.paths[val].nonzero()]
+        path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
+        if (path[0][2] == x and path[0][0] == y):
+            ind = np.where(lookup == val)
+            x_flat = ind[0][0]
+            y_flat = ind[1][0]
+            print("xflat: ", x_flat, "| yflat: ", y_flat)
+            break
+
+        
+    return x_flat, y_flat
+
+def flat_to_top(x,y):
+    global mapper
+    global lookup
+    global paths
+    x_top = 0
+    y_top = 0
+
+    val = lookup[x][y]
+    path = mapper.paths[val][mapper.paths[val].nonzero()]
+    path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
+    x_top = path[0][2]
+    y_top = path[0][0]
+        
+    return x_top, y_top
+
+    
+    
+    
 
 def plot_image(x, y): 
     '''
@@ -54,12 +100,17 @@ def plot_image(x, y):
     '''
     
     global switch_button
+    global current_overlay
+    global x_coord, y_coord
     i, val = 0, lookup[x][y]
     # get the mean path voxel
     print("val = %d" % val)
     print("Evaluating pixel %d" % i)
     path = mapper.paths[val][mapper.paths[val].nonzero()]
     path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
+    print("Path| x: ", x, " y: ", y)
+    print(path)
+    print("--------------------------")
     voxel = tuple(map(int, path.mean(axis=0)))
 
     try:
@@ -99,6 +150,8 @@ def plot_image(x, y):
         cbar.set_ticks([0, 0.0004, 0.0008, 0.0012])
         cbar.ax.tick_params(labelsize=6) 
         plt.tight_layout()
+        x_coord = x
+        y_coord = y
 
         # reinitialize buttons
         switch_button = init_buttons()
@@ -147,11 +200,14 @@ def on_switch(event):
     global current_overlay
     global mapper
     global lookup
+    global paths
+    global x_coord, y_coord
     print("\n\nOld Overlay : ", current_overlay)
     # clear the old plot?
     plt.clf()
     # handle switching from flatmap to topview
     if current_overlay == 'flatmap':
+        x_top, y_top = flat_to_top(x_coord, y_coord)
         current_overlay = 'topview'
         mapper = CorticalMap(projection='top_view')
         # quick hack to fix bug
@@ -160,15 +216,20 @@ def on_switch(event):
         # get the new lookup
         lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
         lookup[:lookup.shape[0]//2, :] = -1
-        plot_image(-1, -1)
+        paths = mapper.paths.copy()
+        plot_image(x_top, y_top)
     # handle switching from topview to flatmap
     elif current_overlay == 'topview':
+        
         current_overlay = 'flatmap'
         mapper = CorticalMap(projection='dorsal_flatmap')
         # get the new lookup
         lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
         lookup[:lookup.shape[0]//2, :] = -1
-        plot_image(200,80)
+        paths = mapper.paths.copy()
+        x_flat, y_flat = top_to_flat(x_coord, y_coord)
+        
+        plot_image(x_flat,y_flat)
     
     # draw the new image
     plt.draw()
