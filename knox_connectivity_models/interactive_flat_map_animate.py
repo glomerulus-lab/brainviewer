@@ -89,7 +89,7 @@ def flat_to_top(x,y):
     
     
     
-
+# Return -1 when coord is not in lookup
 def plot_image(x, y): 
     '''
     Plots connectivity for an injection (x,y).
@@ -101,22 +101,25 @@ def plot_image(x, y):
     global switch_button
     global current_overlay
     global x_coord, y_coord
+
+    if (lookup[x][y] not in lookup[lookup > -1]):
+        return -1
     i, val = 0, lookup[x][y]
     # get the mean path voxel
     print("val = %d" % val)
     print("Evaluating pixel %d" % i)
     path = mapper.paths[val][mapper.paths[val].nonzero()]
     path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
-    print("Path| x: ", x, " y: ", y)
-    print(path)
-    print("--------------------------")
     voxel = tuple(map(int, path.mean(axis=0)))
+       
+  
 
     try:
         row_idx = source_mask.get_flattened_voxel_index(voxel)
     except ValueError:
         print("voxel %s not in mask", voxel)
     else:
+        plt.clf()
         # get voxel expression
         volume = target_mask.fill_volume_where_masked(np.zeros(reference_shape),
                                                         voxel_array[row_idx])
@@ -154,24 +157,26 @@ def plot_image(x, y):
         # reinitialize buttons
         switch_button = init_buttons()
         plt.draw()
+        return 0
 
 
+# Manage key interactions
+# Calls to plot_image do not need to be checked
 def on_key(event):
-    print(event.key + " is pressed")
+    
     global x_coord, y_coord
     if event.key == 'up':
-        y_coord -= 1
+        plot_image(x_coord, y_coord - 1)
     elif event.key == 'down':
-        y_coord += 1
+        plot_image(x_coord, y_coord + 1)       
     elif event.key == 'left':
-        x_coord -= 1
+        plot_image(x_coord - 1, y_coord)
     elif event.key == 'right':
-        x_coord += 1
+        plot_image(x_coord + 1, y_coord)
     else:
         print(event.key + " is an invalid key")
         return
-    plt.clf()
-    plot_image(x_coord, y_coord)
+    
     
     
 def on_press(event):
