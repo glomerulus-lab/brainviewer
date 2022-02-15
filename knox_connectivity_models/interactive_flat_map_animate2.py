@@ -1,10 +1,3 @@
-'''
-Script for generating the GIF in the README
-See the documentation for more examples and API descriptions:
-http://mouse-connectivity-models.readthedocs.io/en/latest/
-'''
-#TOP-DOWN view
-
 import os
 import logging
 import subprocess
@@ -56,6 +49,7 @@ def plot_image(x, y):
     print("coords = ", x, y)
     print("val = ", val)    
     print("img_name = ", img_path)
+    print(exists(img_path))
     
     if exists(img_path):
         plt.clf()
