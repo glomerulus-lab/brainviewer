@@ -51,7 +51,7 @@ def plot_image(x, y):
     print("val = ", val)    
     filename = str(val) + ".png"
     print(filename)
-    img_path = os.path.join(os.getcwd(), 'images', filename);
+    img_path = os.path.join(os.getcwd(), 'topviewImages', filename);
     file_exists = exists(img_path)
     print(file_exists)
     if file_exists:
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
     
     if sys.argv[1] == 'topview':
-        img_path = os.path.join(os.getcwd(), 'images', '104.png');
+        img_path = os.path.join(os.getcwd(), 'topviewImages', '104.png');
         img = plt.imread(img_path)
         #plt.gca().set_ylim(114)
         #plt.gca().set_xlim(132)

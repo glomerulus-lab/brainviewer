@@ -103,6 +103,7 @@ def plot_image(x, y):
     global x_coord, y_coord
 
     if (lookup[x][y] not in lookup[lookup > -1]):
+        print(lookup[x][y])
         return -1
     i, val = 0, lookup[x][y]
     # get the mean path voxel
@@ -112,8 +113,6 @@ def plot_image(x, y):
     path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
     voxel = tuple(map(int, path.mean(axis=0)))
        
-  
-
     try:
         row_idx = source_mask.get_flattened_voxel_index(voxel)
     except ValueError:
@@ -280,10 +279,10 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=(6, 6))
     if sys.argv[1] == 'topview':
         current_overlay = 'topview'
-        plot_image(-1,-1)
+        print(plot_image(84,26))
     if sys.argv[1] == 'flatmap':
         current_overlay = 'flatmap'        
-        plot_image(200,80)
+        print(plot_image(200,80))
 
     switch_button = init_buttons()
     fig.canvas.mpl_connect('button_press_event', on_press)
