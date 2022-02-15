@@ -38,12 +38,11 @@ def plot_image(x, y):
         x (int)
         y (int)
     '''
-    global switch_button, current_overlay
+    global switch_button, current_overlay, x_coord, y_coord
     
     i, val = 0, lookup[x][y]
 
     filename = str(val) + ".png"
-
     img_path = os.path.join(os.getcwd(), current_overlay + 'Images', filename)
 
     print("coords = ", x, y)
@@ -58,8 +57,26 @@ def plot_image(x, y):
         plt.imshow(img, interpolation="nearest",zorder=3)
         init_buttons()
         plt.draw()
+        x_coord = x
+        y_coord = y
 
-    
+
+# Manage key interactions
+# Calls to plot_image do not need to be checked
+def on_key(event):
+    global x_coord, y_coord
+    if event.key == 'up':
+        plot_image(x_coord, y_coord - 1)
+    elif event.key == 'down':
+        plot_image(x_coord, y_coord + 1)       
+    elif event.key == 'left':
+        plot_image(x_coord - 1, y_coord)
+    elif event.key == 'right':
+        plot_image(x_coord + 1, y_coord)
+    else:
+        print(event.key + " is an invalid key")
+        return
+        
 def on_press(event):
     '''
     Gets injection coordinates (x,y) and calls function to plot projection.
@@ -70,7 +87,6 @@ def on_press(event):
     x = int(round(event.xdata) / 10)
     y = int(round(event.ydata) / 10)
 
-    
     if (lookup[x][y] in lookup[lookup > -1]):
         print('you pressed', event.button, x, y)
         start = time.perf_counter()
@@ -81,7 +97,7 @@ def on_press(event):
         print('you pressed', event.button, x, y, 'which is out of bounds.')
 
 def on_switch(event):
-    global current_overlay, mapper, lookup
+    global current_overlay, mapper, lookup, x_coord, y_coord
 
     # clear the old plot
     plt.clf()
@@ -95,6 +111,8 @@ def on_switch(event):
         # get the new lookup
         lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
         lookup[:lookup.shape[0]//2, :] = -1
+        x_coord = 84
+        y_coord = 26
         plot_image(84, 26)
 
     # handle switching from topview to flatmap
@@ -106,6 +124,8 @@ def on_switch(event):
         # get the new lookup
         lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
         lookup[:lookup.shape[0]//2, :] = -1
+        x_coord = 200
+        y_coord = 80
         plot_image(200,80)
         
 # initializes buttons
@@ -153,6 +173,7 @@ if __name__ == '__main__':
         current_overlay = 'flatmap'
         plot_image(200,80)
 
+    fig.canvas.mpl_connect('key_press_event', on_key)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
     switch_button = init_buttons()
     stop = time.perf_counter()
