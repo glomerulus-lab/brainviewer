@@ -48,15 +48,14 @@ def plot_image(x, y):
     global switch_button, current_overlay
     
     i, val = 0, lookup[x][y]
-    print("coords = ", x, y)
-    print("val = ", val)    
+
     filename = str(val) + ".png"
 
-    if current_overlay == 'topview':
-        img_path = os.path.join(os.getcwd(), 'topviewImages', filename);
-    elif current_overlay == 'flatmap':
-        img_path = os.path.join(os.getcwd(), 'flatmapImages', filename);
-    print(img_path)
+    img_path = os.path.join(os.getcwd(), current_overlay + 'Images', filename)
+
+    print("coords = ", x, y)
+    print("val = ", val)    
+    print("img_name = ", img_path)
     
     if exists(img_path):
         plt.clf()
