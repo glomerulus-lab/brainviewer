@@ -20,7 +20,7 @@ from matplotlib.widgets import Button
 # file path where the data files will be downloaded
 MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              '../connectivity', 'mcmodels_manifest.json')
-color_bar_file = 'topviewImages/6.png'
+
 mapper = CorticalMap(projection='top_view')
 current_overlay = 'init'
 vmax = 0.0013824748294428008
@@ -143,6 +143,7 @@ def init_buttons():
     global switch_button
     # axis for switch_button
     ax_switch = plt.axes([0.1, 0.05, 0.1, 0.075])
+    #button reference
     switch_button = Button(ax_switch, 'Switch')
     switch_button.on_clicked(on_switch)
     
