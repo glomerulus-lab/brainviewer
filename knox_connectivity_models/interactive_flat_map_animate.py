@@ -10,8 +10,10 @@ import logging
 from re import X
 import subprocess
 import time
+import math
 
 import sys
+from tkinter import TRUE
 from PIL.Image import init
 
 import numpy as np
@@ -46,15 +48,14 @@ flat_map_overlay = plt.imread("transparent.png")
 x_coord = -1
 y_coord = -1
 
+toggle_cid = 0
+
 finalPath = [-1,-1,-1]
 
 def top_to_flat(x,y):
     global mapper
     global lookup
     global paths
-    ind = np.where(lookup == 30000)
-
-    print("index: ", ind)
     x_flat = 0
     y_flat = 0
     
@@ -65,10 +66,8 @@ def top_to_flat(x,y):
             ind = np.where(lookup == val)
             x_flat = ind[0][0]
             y_flat = ind[1][0]
-            print("xflat: ", x_flat, "| yflat: ", y_flat)
             break
 
-        
     return x_flat, y_flat
 
 def flat_to_top(x,y):
@@ -83,13 +82,25 @@ def flat_to_top(x,y):
     path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
     x_top = path[0][2]
     y_top = path[0][0]
-        
+    
     return x_top, y_top
 
+# return the coordinates of min distance nonnegative points in lookup
+def find_neighbors(x, y):
+  coords = np.where(lookup > -1)
+  dist_size = len(coords[0])
+  distance = [-1] * dist_size
+  coords_x = coords[0]
+  coords_y = coords[1]
+  for i in range(dist_size):
+    distance[i] = math.sqrt(((x - coords_x[i])**2) + ((y - coords_y[i])**2))
+  min_index = np.where(distance == np.amin(distance))[0][0]
+  print("Min distance calulated : ", np.amin(distance))
+  print("New valid point : ", coords_x[min_index], ", ", coords_y[min_index])
+  return coords_x[min_index], coords_y[min_index]
+
     
-    
-    
-# Return -1 when coord is not in lookup
+# Returns -1 when coord is not in lookup
 def plot_image(x, y): 
     '''
     Plots connectivity for an injection (x,y).
@@ -102,16 +113,15 @@ def plot_image(x, y):
     global current_overlay
     global x_coord, y_coord
 
-    if (lookup[x][y] not in lookup[lookup > -1]):
+    if (lookup[x][y] == -1):
+        print("Couldn't find: ", x, ", ", y)
         return -1
     i, val = 0, lookup[x][y]
     # get the mean path voxel
-    print("val = %d" % val)
-    print("Evaluating pixel %d" % i)
+    print("view: ", current_overlay,"| val = ", val)
     path = mapper.paths[val][mapper.paths[val].nonzero()]
     path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
     voxel = tuple(map(int, path.mean(axis=0)))
-       
   
 
     try:
@@ -127,12 +137,14 @@ def plot_image(x, y):
         flat_view = mapper.transform(volume, fill_value=np.nan)
 
         # injection location
-        pixel = np.ma.masked_where(mapper.view_lookup != val, flat_view, copy=False)
+        pixel = np.ma.masked_where(mapper.view_lookup != val, flat_view, 
+                                                          copy=False)
 
         # plot & params
         
         # plot connectivity
-        im = plt.pcolormesh(flat_view, zorder=1, cmap=cmap_view, vmin=0, vmax=vmax)
+        im = plt.pcolormesh(flat_view, zorder=1, cmap=cmap_view, vmin=0,
+                                                           vmax=vmax)
         
         # plot source voxel
         plt.pcolormesh(pixel, zorder=2, cmap=cmap_pixel, vmin=0, vmax=1)
@@ -142,10 +154,12 @@ def plot_image(x, y):
         extent = plt.gca().get_xlim() + plt.gca().get_ylim()
         if current_overlay == 'topview':
             # plot top down overlay as appropriate 
-            plt.imshow(top_down_overlay, interpolation="nearest", extent=extent, zorder=3)
+            plt.imshow(top_down_overlay, interpolation="nearest", 
+                                      extent=extent, zorder=3)
         else:
             #empty overlay for flatmap
-            plt.imshow(flat_map_overlay, interpolation="nearest", extent=extent, zorder=3)
+            plt.imshow(flat_map_overlay, interpolation="nearest", 
+                                      extent=extent, zorder=3)
         # add colorbar
         cbar = plt.colorbar(im, shrink=0.3, use_gridspec=True, format="%1.1e")
         cbar.set_ticks([0, 0.0004, 0.0008, 0.0012])
@@ -164,7 +178,7 @@ def plot_image(x, y):
 # Calls to plot_image do not need to be checked
 def on_key(event):
     
-    global x_coord, y_coord
+    global x_coord, y_coord, toggle_cid
     if event.key == 'up':
         plot_image(x_coord, y_coord - 1)
     elif event.key == 'down':
@@ -173,6 +187,12 @@ def on_key(event):
         plot_image(x_coord - 1, y_coord)
     elif event.key == 'right':
         plot_image(x_coord + 1, y_coord)
+    elif event.key == 't':
+        if (toggle_cid == 0):
+            toggle_cid = fig.canvas.mpl_connect('motion_notify_event', on_press)
+        else:
+            fig.canvas.mpl_disconnect(toggle_cid)
+            toggle_cid = 0
     else:
         print(event.key + " is an invalid key")
         return
@@ -220,7 +240,11 @@ def on_switch(event):
         lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
         lookup[:lookup.shape[0]//2, :] = -1
         paths = mapper.paths.copy()
-        plot_image(x_top, y_top)
+        if (plot_image(x_top, y_top) == -1):
+            print("made it to before find neighbors")
+            x_top, y_top = find_neighbors(x_top, y_top)
+            print("neighbor coordinates: ", x_top, ", ", y_top)
+            plot_image(x_top, y_top)
 
     # handle switching from topview to flatmap
     elif current_overlay == 'topview':
@@ -235,8 +259,8 @@ def on_switch(event):
 
         paths = mapper.paths.copy()
         x_flat, y_flat = top_to_flat(x_coord, y_coord)
+        plot_image(x_flat, y_flat)
         
-        plot_image(x_flat,y_flat)
 
     
             
@@ -280,7 +304,7 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=(6, 6))
     if sys.argv[1] == 'topview':
         current_overlay = 'topview'
-        plot_image(-1,-1)
+        plot_image(84,26)
     if sys.argv[1] == 'flatmap':
         current_overlay = 'flatmap'        
         plot_image(200,80)
@@ -288,6 +312,7 @@ if __name__ == '__main__':
     switch_button = init_buttons()
     fig.canvas.mpl_connect('button_press_event', on_press)
     fig.canvas.mpl_connect('key_press_event', on_key)
+    
     print("Startup time : ", time.perf_counter() - start)
     plt.show()
 
