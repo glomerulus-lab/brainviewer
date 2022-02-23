@@ -20,9 +20,10 @@ from matplotlib.widgets import Button
 # file path where the data files will be downloaded
 MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              '../connectivity', 'mcmodels_manifest.json')
-
+color_bar_file = 'topviewImages/6.png'
 mapper = CorticalMap(projection='top_view')
 current_overlay = 'init'
+vmax = 0.0013824748294428008
 
 # check that an argument provided for topview or flatmap version
 if len(sys.argv) != 2:
@@ -38,8 +39,8 @@ def plot_image(x, y):
         x (int)
         y (int)
     '''
+
     global switch_button, current_overlay, x_coord, y_coord
-    
     i, val = 0, lookup[x][y]
 
     filename = str(val) + ".png"
@@ -53,14 +54,23 @@ def plot_image(x, y):
     if exists(img_path):
         plt.clf()
         img = plt.imread(img_path)
+          
         plt.axis('off')
         plt.imshow(img, interpolation="nearest",zorder=3)
         init_buttons()
+        plot_colorbar()
         plt.draw()
         x_coord = x
         y_coord = y
 
-
+def plot_colorbar():
+    cbar_axes = plt.axes([0.9, 0.3, 0.025, 0.5])
+    cbar_ticks = [0, 0.0004, 0.0008, 0.0012]
+    norm = matplotlib.colors.Normalize(vmin = 0, vmax = vmax)
+    cbar = matplotlib.colorbar.ColorbarBase(ax = cbar_axes, cmap = cmap_view, ticks = cbar_ticks, norm = norm)
+    cbar.ax.tick_params(labelsize=6)
+    
+    
 # Manage key interactions
 # Calls to plot_image do not need to be checked
 def on_key(event):
@@ -133,9 +143,9 @@ def init_buttons():
     global switch_button
     # axis for switch_button
     ax_switch = plt.axes([0.1, 0.05, 0.1, 0.075])
-    # button reference
     switch_button = Button(ax_switch, 'Switch')
     switch_button.on_clicked(on_switch)
+    
     return switch_button
 
 if __name__ == '__main__':
@@ -172,7 +182,9 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'flatmap':
         current_overlay = 'flatmap'
         plot_image(200,80)
-
+    else:
+        print('usage: python interactive_flat_map_animate.py  topview | flatmap')
+        exit()
     fig.canvas.mpl_connect('key_press_event', on_key)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
     switch_button = init_buttons()
