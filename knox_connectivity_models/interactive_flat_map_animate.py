@@ -113,6 +113,7 @@ def plot_image(x, y):
     global current_overlay
     global x_coord, y_coord
 
+
     if (lookup[x][y] == -1):
         print("Couldn't find: ", x, ", ", y)
         return -1
@@ -122,8 +123,6 @@ def plot_image(x, y):
     path = mapper.paths[val][mapper.paths[val].nonzero()]
     path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
     voxel = tuple(map(int, path.mean(axis=0)))
-  
-
     try:
         row_idx = source_mask.get_flattened_voxel_index(voxel)
     except ValueError:
@@ -307,7 +306,7 @@ if __name__ == '__main__':
         plot_image(84,26)
     if sys.argv[1] == 'flatmap':
         current_overlay = 'flatmap'        
-        plot_image(200,80)
+        print(plot_image(200,80))
 
     switch_button = init_buttons()
     fig.canvas.mpl_connect('button_press_event', on_press)

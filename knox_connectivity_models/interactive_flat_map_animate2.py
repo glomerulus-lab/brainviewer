@@ -1,10 +1,3 @@
-'''
-Script for generating the GIF in the README
-See the documentation for more examples and API descriptions:
-http://mouse-connectivity-models.readthedocs.io/en/latest/
-'''
-#TOP-DOWN view
-
 import os
 import logging
 import subprocess
@@ -27,12 +20,13 @@ from matplotlib.widgets import Button
 # file path where the data files will be downloaded
 MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              '../connectivity', 'mcmodels_manifest.json')
-OUTPUT_DIR = 'images'
-GIF_CONVERT_COMMAND = 'convert -delay 3x100 -size 50x50 *.png output.gif'
+
 mapper = CorticalMap(projection='top_view')
+current_overlay = 'init'
+vmax = 0.0013824748294428008
 
 # check that an argument provided for topview or flatmap version
-if len(sys.argv) == 1:
+if len(sys.argv) != 2:
     print('usage: python interactive_flat_map_animate.py  topview | flatmap')
     exit()
 
@@ -46,29 +40,53 @@ def plot_image(x, y):
         y (int)
     '''
 
+    global switch_button, current_overlay, x_coord, y_coord
     i, val = 0, lookup[x][y]
+
+    filename = str(val) + ".png"
+    img_path = os.path.join(os.getcwd(), current_overlay + 'Images', filename)
+
     print("coords = ", x, y)
     print("val = ", val)    
-    filename = str(val) + ".png"
-    print(filename)
-    img_path = os.path.join(os.getcwd(), 'images', filename);
-    file_exists = exists(img_path)
-    print(file_exists)
-    if file_exists:
+    print("img_name = ", img_path)
+    print(exists(img_path))
+    
+    if exists(img_path):
         plt.clf()
         img = plt.imread(img_path)
-        #plt.gca().set_ylim(114)
-        #plt.gca().set_xlim(132)
-        #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
+          
         plt.axis('off')
         plt.imshow(img, interpolation="nearest",zorder=3)
         init_buttons()
+        plot_colorbar()
         plt.draw()
+        x_coord = x
+        y_coord = y
 
-
-
-
+def plot_colorbar():
+    cbar_axes = plt.axes([0.9, 0.3, 0.025, 0.5])
+    cbar_ticks = [0, 0.0004, 0.0008, 0.0012]
+    norm = matplotlib.colors.Normalize(vmin = 0, vmax = vmax)
+    cbar = matplotlib.colorbar.ColorbarBase(ax = cbar_axes, cmap = cmap_view, ticks = cbar_ticks, norm = norm)
+    cbar.ax.tick_params(labelsize=6)
     
+    
+# Manage key interactions
+# Calls to plot_image do not need to be checked
+def on_key(event):
+    global x_coord, y_coord
+    if event.key == 'up':
+        plot_image(x_coord, y_coord - 1)
+    elif event.key == 'down':
+        plot_image(x_coord, y_coord + 1)       
+    elif event.key == 'left':
+        plot_image(x_coord - 1, y_coord)
+    elif event.key == 'right':
+        plot_image(x_coord + 1, y_coord)
+    else:
+        print(event.key + " is an invalid key")
+        return
+        
 def on_press(event):
     '''
     Gets injection coordinates (x,y) and calls function to plot projection.
@@ -79,7 +97,6 @@ def on_press(event):
     x = int(round(event.xdata) / 10)
     y = int(round(event.ydata) / 10)
 
-    
     if (lookup[x][y] in lookup[lookup > -1]):
         print('you pressed', event.button, x, y)
         start = time.perf_counter()
@@ -89,16 +106,50 @@ def on_press(event):
     else:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
 
-    
+def on_switch(event):
+    global current_overlay, mapper, lookup, x_coord, y_coord
+
+    # clear the old plot
+    plt.clf()
+    # handle switching from flatmap to topview
+    if current_overlay == 'flatmap':
+        current_overlay = 'topview'
+        mapper = CorticalMap(projection='top_view')
+        # quick hack to fix bug
+        mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
+        mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
+        # get the new lookup
+        lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
+        lookup[:lookup.shape[0]//2, :] = -1
+        x_coord = 84
+        y_coord = 26
+        plot_image(84, 26)
+
+    # handle switching from topview to flatmap
+    elif current_overlay == 'topview':
+        current_overlay = 'flatmap'
+        mapper = CorticalMap(projection='dorsal_flatmap')
+        mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
+        mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
+        # get the new lookup
+        lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
+        lookup[:lookup.shape[0]//2, :] = -1
+        x_coord = 200
+        y_coord = 80
+        plot_image(200,80)
+        
 # initializes buttons
 def init_buttons():
+    global switch_button
     # axis for switch_button
-    ax_swtich = plt.axes([0.1, 0.05, 0.1, 0.075])
-    # button reference
-    switch_button = Button(ax_swtich, 'Switch')
+    ax_switch = plt.axes([0.1, 0.05, 0.1, 0.075])
+    #button reference
+    switch_button = Button(ax_switch, 'Switch')
+    switch_button.on_clicked(on_switch)
+    
+    return switch_button
 
 if __name__ == '__main__':
-    #start = time.perf_counter()
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
 
@@ -124,23 +175,20 @@ if __name__ == '__main__':
 
     #Begin image plotting and mouse tracking
     fig, ax = plt.subplots(figsize=(6, 7))
-    #plt.gca().invert_yaxis()
     plt.axis('off')
-    #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
     
     if sys.argv[1] == 'topview':
-        img_path = os.path.join(os.getcwd(), 'images', '104.png');
-        img = plt.imread(img_path)
-        #plt.gca().set_ylim(114)
-        #plt.gca().set_xlim(132)
-        #extent = plt.gca().get_xlim() + plt.gca().get_ylim()
-        plt.imshow(img, interpolation="nearest", zorder=3)
+        current_overlay = 'topview'
+        plot_image(84, 26)
     elif sys.argv[1] == 'flatmap':
+        current_overlay = 'flatmap'
         plot_image(200,80)
+    else:
+        print('usage: python interactive_flat_map_animate.py  topview | flatmap')
+        exit()
+    fig.canvas.mpl_connect('key_press_event', on_key)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
-
-    init_buttons()
+    switch_button = init_buttons()
     stop = time.perf_counter()
     print("Startup Time : ", stop-start)
     plt.show()
-    plt.draw()
