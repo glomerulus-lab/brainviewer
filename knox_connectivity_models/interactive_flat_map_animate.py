@@ -29,10 +29,8 @@ from matplotlib.widgets import Button
 MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              '../connectivity', 'mcmodels_manifest.json')
 mapper = CorticalMap(projection='top_view')
-lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
-lookup[:lookup.shape[0]//2, :] = -1
-
-paths = mapper.paths.copy()
+#lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
+global lookup, paths
 
 current_overlay = "init"
 
@@ -52,15 +50,32 @@ toggle_cid = 0
 
 finalPath = [-1,-1,-1]
 
+def load_data ():
+    global lookup
+    global paths
+    if (os.path.exists('lookup.npy')):
+        print("found lookup.npy")
+        lookup = np.load('lookup.npy')
+    else:
+        lookup = mapper.view_lookup.copy().T
+        np.save('lookup.npy', lookup)
+
+    if (os.path.exists('paths.npy')):
+        print("found paths.npy")
+        paths = np.load('paths.npy')
+    else:
+        paths = mapper.paths.copy()
+        np.save('paths.npy', paths)
+  
+
 def top_to_flat(x,y):
-    global mapper
     global lookup
     global paths
     x_flat = 0
     y_flat = 0
     
     for i, val in enumerate(lookup[lookup > -1]):
-        path = mapper.paths[val][mapper.paths[val].nonzero()]
+        path = paths[val][paths[val].nonzero()]
         path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
         if (path[0][2] == x and path[0][0] == y):
             ind = np.where(lookup == val)
@@ -71,14 +86,13 @@ def top_to_flat(x,y):
     return x_flat, y_flat
 
 def flat_to_top(x,y):
-    global mapper
     global lookup
     global paths
     x_top = 0
     y_top = 0
 
     val = lookup[x][y]
-    path = mapper.paths[val][mapper.paths[val].nonzero()]
+    path = paths[val][paths[val].nonzero()]
     path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
     x_top = path[0][2]
     y_top = path[0][0]
@@ -110,6 +124,7 @@ def plot_image(x, y):
     '''
     
     global switch_button
+    global lookup, paths
     global current_overlay
     global x_coord, y_coord
 
@@ -120,7 +135,7 @@ def plot_image(x, y):
     i, val = 0, lookup[x][y]
     # get the mean path voxel
     print("view: ", current_overlay,"| val = ", val)
-    path = mapper.paths[val][mapper.paths[val].nonzero()]
+    path = paths[val][paths[val].nonzero()]
     path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
     voxel = tuple(map(int, path.mean(axis=0)))
     try:
@@ -272,11 +287,13 @@ def init_buttons():
 
 if __name__ == '__main__':
     start = time.perf_counter()
+    load_data()
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
 
     # load voxel model
     voxel_array, source_mask, target_mask = cache.get_voxel_connectivity_array()
+  
     reference_shape = source_mask.reference_space.annotation.shape
     vmax = 1.2 * np.percentile(voxel_array.nodes, 99)
 
@@ -295,9 +312,9 @@ if __name__ == '__main__':
     cmap_view.set_bad(alpha=0)
     cmap_pixel.set_bad(alpha=0)
 
-    # only want R hemisphere
-    lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
-    lookup[:lookup.shape[0]//2, :] = -1
+    # # only want R hemisphere
+    # lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
+    # lookup[:lookup.shape[0]//2, :] = -1
 
     #Begin image plotting and mouse tracking
     fig, ax = plt.subplots(figsize=(6, 6))
