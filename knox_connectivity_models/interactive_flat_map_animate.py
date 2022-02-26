@@ -50,22 +50,23 @@ toggle_cid = 0
 
 finalPath = [-1,-1,-1]
 
-def load_data ():
+# takes string of view type to load : topview / flatmap
+def load_maps (view):
     global lookup
     global paths
-    if (os.path.exists('lookup.npy')):
+    if (os.path.exists(view + '_lookup.npy')):
         print("found lookup.npy")
-        lookup = np.load('lookup.npy')
+        lookup = np.load(view + '_lookup.npy')
     else:
         lookup = mapper.view_lookup.copy().T
-        np.save('lookup.npy', lookup)
+        np.save(view + '_lookup.npy', lookup)
 
-    if (os.path.exists('paths.npy')):
+    if (os.path.exists(view + '_paths.npy')):
         print("found paths.npy")
-        paths = np.load('paths.npy')
+        paths = np.load(view + '_paths.npy')
     else:
         paths = mapper.paths.copy()
-        np.save('paths.npy', paths)
+        np.save(view + '_paths.npy', paths)
   
 
 def top_to_flat(x,y):
@@ -251,9 +252,9 @@ def on_switch(event):
         mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
         mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
         # get the new lookup
-        lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
+        load_maps(current_overlay)
         lookup[:lookup.shape[0]//2, :] = -1
-        paths = mapper.paths.copy()
+        
         if (plot_image(x_top, y_top) == -1):
             print("made it to before find neighbors")
             x_top, y_top = find_neighbors(x_top, y_top)
@@ -268,10 +269,8 @@ def on_switch(event):
         mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
         mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
         # get the new lookup
-        lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
+        load_maps(current_overlay)
         lookup[:lookup.shape[0]//2, :] = -1
-
-        paths = mapper.paths.copy()
         x_flat, y_flat = top_to_flat(x_coord, y_coord)
         plot_image(x_flat, y_flat)
         
@@ -287,7 +286,7 @@ def init_buttons():
 
 if __name__ == '__main__':
     start = time.perf_counter()
-    load_data()
+    
     # caching object for downloading/loading connectivity/model data
     cache = VoxelModelCache(manifest_file=MANIFEST_FILE)
 
@@ -299,8 +298,10 @@ if __name__ == '__main__':
 
     # 2D Cortical Surface Mapper
     # projection: can change to "flatmap" if desired
+    load_maps('topview')
     if sys.argv[1] == 'flatmap':
         mapper = CorticalMap(projection='dorsal_flatmap')
+        load_maps('flatmap')
         
     # quick hack to fix bug
     mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
