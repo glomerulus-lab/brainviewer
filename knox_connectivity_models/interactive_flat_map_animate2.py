@@ -45,7 +45,7 @@ def plot_image(x, y):
 
     filename = str(val) + ".png"
     img_path = os.path.join(os.getcwd(), current_overlay + 'Images', filename)
-
+        
     print("coords = ", x, y)
     print("val = ", val)    
     print("img_name = ", img_path)
@@ -54,7 +54,6 @@ def plot_image(x, y):
     if exists(img_path):
         plt.clf()
         img = plt.imread(img_path)
-          
         plt.axis('off')
         plt.imshow(img, interpolation="nearest",zorder=3)
         init_buttons()
@@ -64,12 +63,11 @@ def plot_image(x, y):
         y_coord = y
 
 def plot_colorbar():
-    cbar_axes = plt.axes([0.9, 0.3, 0.025, 0.5])
-    cbar_ticks = [0, 0.0004, 0.0008, 0.0012]
-    norm = matplotlib.colors.Normalize(vmin = 0, vmax = vmax)
-    cbar = matplotlib.colorbar.ColorbarBase(ax = cbar_axes, cmap = cmap_view, ticks = cbar_ticks, norm = norm)
-    cbar.ax.tick_params(labelsize=6)
-    
+    cbar_axes = plt.axes([.9, .35, .1, .3])
+    cbar_path = os.path.join(os.getcwd(), 'colorbar.png')
+    cbar = plt.imread(cbar_path)
+    plt.axis('off')
+    plt.imshow(cbar)    
     
 # Manage key interactions
 # Calls to plot_image do not need to be checked
