@@ -21,7 +21,7 @@ logger = logging.getLogger(name=__name__)
 # file path where the data files will be downloaded
 MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              '../connectivity', 'mcmodels_manifest.json')
-OUTPUT_DIR = 'pixelImages'
+OUTPUT_DIR = 'xyImages'
 GIF_CONVERT_COMMAND = 'convert -delay 3x100 -size 50x50 *.png output.gif'
 
 top_down_overlay = plt.imread("cortical_map_top_down.png")
@@ -53,11 +53,18 @@ def main():
     lookup = mapper.view_lookup.copy().T # transpose for vertical pixel query
     lookup[:lookup.shape[0]//2, :] = -1
 
+    coords = np.where(lookup > -1)
+
     # dict(2D lookup_value -> avg(path))
     logging.info('beginning image creation')
-    for i, val in enumerate(lookup[lookup > -1]):
-        # get the mean path voxel
+    
+    x_vals = coords[0]
+    y_vals = coords[1]
+    for i in range(len(x_vals)):
         print("Evaluating pixel %d" % i)
+        x = x_vals[i]
+        y = y_vals[i]
+        val = lookup[x][y]
         path = mapper.paths[val][mapper.paths[val].nonzero()]
         path = np.vstack([np.unravel_index(x, reference_shape) for x in path])
         voxel = tuple(map(int, path.mean(axis=0)))
@@ -69,7 +76,7 @@ def main():
         else:
             # get voxel expression
             volume = target_mask.fill_volume_where_masked(np.zeros(reference_shape),
-                                                          voxel_array[row_idx])
+                                                        voxel_array[row_idx])
 
             # map to cortical surface
             flat_view = mapper.transform(volume, fill_value=np.nan)
@@ -89,9 +96,8 @@ def main():
             extent = plt.gca().get_xlim() + plt.gca().get_ylim()
             print(plt.gca().get_xlim(),plt.gca().get_ylim())
             plt.imshow(top_down_overlay, interpolation="nearest", extent=extent, zorder=3)
- 
+            filename = str(x)+ "_" + str(y) + ".png"
             plt.tight_layout()
-            filename = str(val) + ".png"
             plt.savefig(os.path.join(OUTPUT_DIR, filename), 
                         bbox_inches="tight", facecolor=None, edgecolor=None,
                         transparent=True, dpi=200, pad_inches = 0.0)
@@ -102,6 +108,7 @@ def main():
 
 if __name__ == '__main__':
     # default logging
+    print("IN THE VERSION YOU WORKING ON")
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
     handler.setLevel(logging.DEBUG)
