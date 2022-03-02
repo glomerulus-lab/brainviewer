@@ -24,6 +24,7 @@ MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 mapper = CorticalMap(projection='top_view')
 current_overlay = 'init'
 vmax = 0.0013824748294428008
+image_factor = 10
 
 # check that an argument provided for topview or flatmap version
 if len(sys.argv) != 2:
@@ -90,8 +91,8 @@ def on_press(event):
         event
     '''
     #scale the x, y coords down to fit the image resolution
-    x = int(round(event.xdata) / 10)
-    y = int(round(event.ydata) / 10)
+    x = int(round(event.xdata) / image_factor)
+    y = int(round(event.ydata) / image_factor)
 
     if (lookup[x][y] in lookup[lookup > -1]):
         print('you pressed', event.button, x, y)
