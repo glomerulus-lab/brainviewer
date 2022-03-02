@@ -41,13 +41,11 @@ def plot_image(x, y):
     '''
 
     global switch_button, current_overlay, x_coord, y_coord
-    i, val = 0, lookup[x][y]
 
-    filename = str(val) + ".png"
+    filename = str(x) + "_" + str(y) + ".png"
     img_path = os.path.join(os.getcwd(), current_overlay + 'Images', filename)
         
     print("coords = ", x, y)
-    print("val = ", val)    
     print("img_name = ", img_path)
     print(exists(img_path))
     
@@ -177,7 +175,7 @@ if __name__ == '__main__':
     
     if sys.argv[1] == 'topview':
         current_overlay = 'topview'
-        plot_image(84, 26)
+        plot_image(57, 26)
     elif sys.argv[1] == 'flatmap':
         current_overlay = 'flatmap'
         plot_image(200,80)
