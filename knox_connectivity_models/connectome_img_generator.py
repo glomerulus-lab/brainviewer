@@ -108,7 +108,6 @@ def main():
 
 if __name__ == '__main__':
     # default logging
-    print("IN THE VERSION YOU WORKING ON")
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
     handler.setLevel(logging.DEBUG)
