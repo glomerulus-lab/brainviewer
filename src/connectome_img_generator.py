@@ -1,14 +1,7 @@
-'''
-Script for generating the GIF in the README
-See the documentation for more examples and API descriptions:
-http://mouse-connectivity-models.readthedocs.io/en/latest/
-'''
-#TOP-DOWN view
-
 import os
 import logging
 import subprocess
-
+import sys 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm
@@ -21,10 +14,34 @@ logger = logging.getLogger(name=__name__)
 # file path where the data files will be downloaded
 MANIFEST_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              '../connectivity', 'mcmodels_manifest.json')
-OUTPUT_DIR = 'xyImages'
-GIF_CONVERT_COMMAND = 'convert -delay 3x100 -size 50x50 *.png output.gif'
 
-top_down_overlay = plt.imread("cortical_map_top_down.png")
+
+if len(sys.argv) != 2:
+    print('usage: python connectome_img_generator.py  topview | flatmap')
+    exit()
+    
+
+
+if sys.argv[1] == 'flatmap':
+    mapper = CorticalMap(projection='dorsal_flatmap')
+    current_overlay = 'flatmap'
+    top_down_overlay = plt.imread("knox_connectivity_models/transparent.png")
+elif sys.argv[1] == 'topview':
+    mapper = CorticalMap(projection='top_view')
+    current_overlay = 'topview'
+    top_down_overlay = plt.imread("knox_connectivity_models/cortical_map_top_down.png")
+else:
+    print('usage: python connectome_img_generator.py  topview | flatmap')
+    exit()
+    
+#handle directory creation
+OUTPUT_DIR = current_overlay + 'Images'
+if not os.path.isdir(OUTPUT_DIR):
+    os.makedirs(OUTPUT_DIR)
+    
+print(OUTPUT_DIR)    
+
+
 
 def main():
     # caching object for downloading/loading connectivity/model data
@@ -38,7 +55,7 @@ def main():
 
     # 2D Cortical Surface Mapper
     # projection: can change to "flatmap" if desired
-    mapper = CorticalMap(projection='top_view')
+
     # quick hack to fix bug
     mapper.view_lookup[51, 69] = mapper.view_lookup[51, 68]
     mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
@@ -57,7 +74,7 @@ def main():
 
     # dict(2D lookup_value -> avg(path))
     logging.info('beginning image creation')
-    
+    print('beginning image creation')
     x_vals = coords[0]
     y_vals = coords[1]
     for i in range(len(x_vals)):
@@ -85,7 +102,10 @@ def main():
             pixel = np.ma.masked_where(mapper.view_lookup != val, flat_view, copy=False)
 
             # plot & params
-            fig, ax = plt.subplots(figsize=(6, 7))
+            if current_overlay == 'flatmap':
+                fig, ax = plt.subplots(figsize=(27.24, 13.77))
+            elif current_overlay == 'topview':
+                fig, ax = plt.subplots(figsize=(6, 7))
             # plot connectivity
             im = plt.pcolormesh(flat_view, zorder=1, cmap=cmap_view, vmin=0, vmax=vmax)
             # plot source voxel
@@ -98,7 +118,13 @@ def main():
             plt.imshow(top_down_overlay, interpolation="nearest", extent=extent, zorder=3)
             filename = str(x)+ "_" + str(y) + ".png"
             plt.tight_layout()
-            plt.savefig(os.path.join(OUTPUT_DIR, filename), 
+            
+            if current_overlay == 'flatmap':
+                plt.savefig(os.path.join(OUTPUT_DIR, filename), 
+                        bbox_inches="tight", facecolor=None, edgecolor=None,
+                        transparent=True, dpi=101, pad_inches = 0.0)
+            elif current_overlay == 'topview':
+                plt.savefig(os.path.join(OUTPUT_DIR, filename), 
                         bbox_inches="tight", facecolor=None, edgecolor=None,
                         transparent=True, dpi=200, pad_inches = 0.0)
             plt.close()
