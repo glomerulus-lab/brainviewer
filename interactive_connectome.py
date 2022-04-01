@@ -39,9 +39,9 @@ if len(sys.argv) != 2:
     print('usage: python interactive_flat_map_animate.py  topview | flatmap')
     exit()
 
-top_down_overlay = plt.imread("cortical_map_top_down.png")
+top_down_overlay = plt.imread("data/cortical_map_top_down.png")
 
-flat_map_overlay = plt.imread("transparent.png")
+flat_map_overlay = plt.imread("data/transparent.png")
 
 x_coord = -1
 y_coord = -1
@@ -54,19 +54,19 @@ finalPath = [-1,-1,-1]
 def load_maps (view):
     global lookup
     global paths
-    if (os.path.exists(view + '_lookup.npy')):
+    if (os.path.exists("data/"+ view + '_lookup.npy')):
         print("found lookup.npy")
-        lookup = np.load(view + '_lookup.npy')
+        lookup = np.load("data/"+ view + '_lookup.npy')
     else:
         lookup = mapper.view_lookup.copy().T
-        np.save(view + '_lookup.npy', lookup)
+        np.save("data/"+ view + '_lookup.npy', lookup)
 
-    if (os.path.exists(view + '_paths.npy')):
+    if (os.path.exists("data/"+ view + '_paths.npy')):
         print("found paths.npy")
-        paths = np.load(view + '_paths.npy')
+        paths = np.load("data/"+ view + '_paths.npy')
     else:
         paths = mapper.paths.copy()
-        np.save(view + '_paths.npy', paths)
+        np.save("data/"+ view + '_paths.npy', paths)
   
 
 def top_to_flat(x,y):

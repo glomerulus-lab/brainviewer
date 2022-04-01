@@ -31,7 +31,7 @@ if len(sys.argv) != 2:
     print('usage: python interactive_flat_map_animate.py  topview | flatmap')
     exit()
 
-top_down_overlay = plt.imread("cortical_map_top_down.png")
+top_down_overlay = plt.imread("data/cortical_map_top_down.png")
 
 def plot_image(x, y): 
     '''
@@ -44,7 +44,7 @@ def plot_image(x, y):
     global switch_button, current_overlay, x_coord, y_coord
 
     filename = str(x) + "_" + str(y) + ".png"
-    img_path = os.path.join(os.getcwd(), current_overlay + 'Images', filename)
+    img_path = os.path.join(os.getcwd(), 'data/' + current_overlay + "Images", filename)
         
     print("coords = ", x, y)
     print("img_name = ", img_path)
@@ -63,7 +63,7 @@ def plot_image(x, y):
 
 def plot_colorbar():
     cbar_axes = plt.axes([.9, .35, .1, .3])
-    cbar_path = os.path.join(os.getcwd(), 'colorbar.png')
+    cbar_path = os.path.join(os.getcwd(), 'data/colorbar.png')
     cbar = plt.imread(cbar_path)
     plt.axis('off')
     plt.imshow(cbar)    
