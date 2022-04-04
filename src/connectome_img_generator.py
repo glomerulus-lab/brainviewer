@@ -25,17 +25,17 @@ if len(sys.argv) != 2:
 if sys.argv[1] == 'flatmap':
     mapper = CorticalMap(projection='dorsal_flatmap')
     current_overlay = 'flatmap'
-    top_down_overlay = plt.imread("knox_connectivity_models/transparent.png")
+    top_down_overlay = plt.imread("data/transparent.png")
 elif sys.argv[1] == 'topview':
     mapper = CorticalMap(projection='top_view')
     current_overlay = 'topview'
-    top_down_overlay = plt.imread("knox_connectivity_models/cortical_map_top_down.png")
+    top_down_overlay = plt.imread("data/cortical_map_top_down.png")
 else:
     print('usage: python connectome_img_generator.py  topview | flatmap')
     exit()
     
 #handle directory creation
-OUTPUT_DIR = current_overlay + 'Images'
+OUTPUT_DIR = "data/" + current_overlay + 'Images'
 if not os.path.isdir(OUTPUT_DIR):
     os.makedirs(OUTPUT_DIR)
     
