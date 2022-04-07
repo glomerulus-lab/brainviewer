@@ -5,7 +5,7 @@ Pull from https://github.com/AllenInstitute/mouse_connectivity_models to get sta
 If needed: wget https://repo.anaconda.com/archive/Anaconda3-2021.05-Linux-x86_64.sh
 
 
-To run the interactive brainviewer, first run set_up.py
+To run the interactive brainviewer, first run setup.py
 
 Next, move or copy the following files and directories:
 ```
