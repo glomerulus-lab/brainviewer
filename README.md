@@ -1,11 +1,8 @@
 # brainviewer
 
-Pull from https://github.com/AllenInstitute/mouse_connectivity_models to get started.
+Requirements include `allensdk` and `mcmodels` (https://github.com/AllenInstitute/allensdk, https://github.com/AllenInstitute/mouse_connectivity_models).
 
-If needed: wget https://repo.anaconda.com/archive/Anaconda3-2021.05-Linux-x86_64.sh
-
-
-To run the interactive brainviewer, first run setup.py
+To run the interactive brainviewer, first run setup.py. This will preprocess the data.
 
 Next, move or copy the following files and directories:
 ```
