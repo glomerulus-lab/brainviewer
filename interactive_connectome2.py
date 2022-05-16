@@ -3,6 +3,7 @@ import logging
 import subprocess
 from os.path import exists
 import time
+import copy
 start = time.perf_counter()
 
 import sys
@@ -25,10 +26,12 @@ mapper = CorticalMap(projection='top_view')
 current_overlay = 'init'
 vmax = 0.0013824748294428008
 image_factor = 10
+verbocity = 0
 
 # check that an argument provided for topview or flatmap version
-if len(sys.argv) != 2:
-    print('usage: python interactive_flat_map_animate.py  topview | flatmap')
+
+if len(sys.argv) != 2 and len(sys.argv) != 4:
+    print('usage: python interactive_flat_map_animate.py  topview | flatmap [-v 1 | -v 2] ')
     exit()
 
 top_down_overlay = plt.imread("data/cortical_map_top_down.png")
@@ -45,10 +48,12 @@ def plot_image(x, y):
 
     filename = str(x) + "_" + str(y) + ".png"
     img_path = os.path.join(os.getcwd(), 'data/' + current_overlay + "Images", filename)
-        
-    print("coords = ", x, y)
-    print("img_name = ", img_path)
-    print(exists(img_path))
+
+    if verbocity > 0:
+        print("coords = ", x, y)
+        if verbocity > 1:
+            print("img_name = ", img_path)
+            #print(exists(img_path))
     
     if exists(img_path):
         plt.clf()
@@ -95,12 +100,17 @@ def on_press(event):
     y = int(round(event.ydata) / image_factor)
 
     if (lookup[x][y] in lookup[lookup > -1]):
-        print('you pressed', event.button, x, y)
+
+        if verbocity > 1:
+            print('you pressed', event.button, x, y)
+
         start = time.perf_counter()
         plot_image(x, y)
         stop = time.perf_counter()
-        print("Plot Time : ", stop - start)
-    else:
+        
+        if verbocity > 0:
+            print("Plot Time : ", stop - start)
+    elif x != 0 and y != 0:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
 
 def on_switch(event):
@@ -161,8 +171,10 @@ if __name__ == '__main__':
     mapper.view_lookup[51, 44] = mapper.view_lookup[51, 43]
 
     # colormaps
-    cmap_view = matplotlib.cm.inferno
-    cmap_pixel = matplotlib.cm.cool
+    cmap_view = copy.copy(matplotlib.cm.get_cmap("inferno"))
+    #cmap_view = matplotlib.cm.inferno
+    #cmap_pixel = matplotlib.cm.cool
+    cmap_pixel = copy.copy(matplotlib.cm.get_cmap("cool"))
     cmap_view.set_bad(alpha=0)
     cmap_pixel.set_bad(alpha=0)
 
@@ -171,9 +183,16 @@ if __name__ == '__main__':
     lookup[:lookup.shape[0]//2, :] = -1
 
     #Begin image plotting and mouse tracking
-    fig, ax = plt.subplots(figsize=(6, 7))
+    fig, ax = plt.subplots(figsize=(6, 7), nrows = 2, num = "BrainViewer")
     plt.axis('off')
-    
+    if len(sys.argv) > 2 :
+        if sys.argv[2] == "-v" and sys.argv[3] in ["0", "1", "2"]:
+            verbocity = int(sys.argv[3])
+        else:
+            print('usage: python interactive_flat_map_animate.py  topview | flatmap [-v 1 | -v 2]')
+            print("ERR")
+            exit()
+            
     if sys.argv[1] == 'topview':
         current_overlay = 'topview'
         plot_image(57, 26)
@@ -181,11 +200,13 @@ if __name__ == '__main__':
         current_overlay = 'flatmap'
         plot_image(200,80)
     else:
-        print('usage: python interactive_flat_map_animate.py  topview | flatmap')
+        print('usage: python interactive_flat_map_animate.py  topview | flatmap [-v 1 | -v 2]')
         exit()
+
     fig.canvas.mpl_connect('key_press_event', on_key)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
     switch_button = init_buttons()
     stop = time.perf_counter()
-    print("Startup Time : ", stop-start)
+    if verbocity > 0:
+        print("Startup Time : ", stop-start)
     plt.show()
