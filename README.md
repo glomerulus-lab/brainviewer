@@ -20,7 +20,7 @@ python3 interactive_connectome.py flatmap
 
 
 ## interactive_connectome2.py 
-Module to display an interactive topview or flatmap view of the mouse brain. Upon clicking the mouse brain, the related projection is **uploaded** and diplayed. 
+Module to display an interactive topview or flatmap view of the mouse brain. Upon clicking the mouse brain, the related projection is **loaded from a file** and diplayed. 
 
 Arguments:
 - testname: "topview" or "flatmap"
