@@ -27,12 +27,14 @@ current_overlay = 'init'
 vmax = 0.0013824748294428008
 image_factor = 10
 verbocity = 0
+if(len(sys.argv) > 3):
+    verbocity = int(sys.argv[3])
 
 # check that an argument provided for topview or flatmap version
 
-if len(sys.argv) != 2 and len(sys.argv) != 4:
-    print('usage: python interactive_flat_map_animate.py  topview | flatmap [-v 1 | -v 2] ')
-    exit()
+#if len(sys.argv) != 2 and len(sys.argv) != 4:
+#    print('usage: python interactive_flat_map_animate.py  topview | flatmap [-v 1 | -v 2] ')
+#    exit()
 
 top_down_overlay = plt.imread("data/cortical_map_top_down.png")
 
@@ -100,7 +102,6 @@ def on_press(event):
     y = int(round(event.ydata) / image_factor)
 
     if (lookup[x][y] in lookup[lookup > -1]):
-
         if verbocity > 1:
             print('you pressed', event.button, x, y)
 
@@ -110,6 +111,7 @@ def on_press(event):
         
         if verbocity > 0:
             print("Plot Time : ", stop - start)
+
     elif x != 0 and y != 0:
         print('you pressed', event.button, x, y, 'which is out of bounds.')
 
@@ -185,23 +187,27 @@ if __name__ == '__main__':
     #Begin image plotting and mouse tracking
     fig, ax = plt.subplots(figsize=(6, 7), nrows = 2, num = "BrainViewer")
     plt.axis('off')
-    if len(sys.argv) > 2 :
-        if sys.argv[2] == "-v" and sys.argv[3] in ["0", "1", "2"]:
-            verbocity = int(sys.argv[3])
-        else:
-            print('usage: python interactive_flat_map_animate.py  topview | flatmap [-v 1 | -v 2]')
-            print("ERR")
-            exit()
-            
+    
+    #    if len(sys.argv) > 2 :
+    #        if sys.argv[2] == "-v" and sys.argv[3] in ["0", "1", "2"]:
+    #            verbocity = int(sys.argv[3])
+    #        else:
+    #            print('usage: python interactive_connectome.py  topview | flatmap [-v 1 | -v 2]')
+    #            print("ERR")
+    #            exit()
+    
+    #verbocity = int(sys.argv[3])
+    
     if sys.argv[1] == 'topview':
         current_overlay = 'topview'
         plot_image(57, 26)
     elif sys.argv[1] == 'flatmap':
         current_overlay = 'flatmap'
         plot_image(200,80)
-    else:
-        print('usage: python interactive_flat_map_animate.py  topview | flatmap [-v 1 | -v 2]')
-        exit()
+#0    else:
+ #       print("ERR")
+#        print('usage: python interactive_flat_map_animate.py  topview | flatmap [-v 1 | -v 2]')
+  #      exit()
 
     fig.canvas.mpl_connect('key_press_event', on_key)
     cid = fig.canvas.mpl_connect('button_press_event', on_press)
