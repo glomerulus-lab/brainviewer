@@ -6,8 +6,19 @@ Requirements include `allensdk` and `mcmodels` (https://github.com/AllenInstitut
 
 To run the interactive brainviewer, first run setup.py. This will preprocess the data.
 
-
 ## interactive_connectome.py
+Module which runs real_time_plot.py or img_look_up.py based on user specification. The specification "-rt" refers to real_time_plot.py and "-pc" refers to img_look_up.py
+
+Arguments:
+- method: "-rt" or "-pc"
+- testname: "topview" or "flatmap"
+
+Example Invocation:
+```
+python3 interactive_connectome.py -pc flatmap
+```
+
+## real_time_plot.py
 Module to display an interactive topview or flatmap view of the mouse brain. Upon clicking the mouse brain, the related projection is **computed** and diplayed.
 
 Arguments:
@@ -19,7 +30,7 @@ python3 interactive_connectome.py flatmap
 ```
 
 
-## interactive_connectome2.py 
+## img_look_up.py 
 Module to display an interactive topview or flatmap view of the mouse brain. Upon clicking the mouse brain, the related projection is **loaded from a file** and diplayed. 
 
 Arguments:
