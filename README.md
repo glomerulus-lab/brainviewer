@@ -2,7 +2,7 @@
 
 BrainViewer is an interactive connectivity visualization tool using a high resolution cortical mouse connectome. Each injection and resulting projection can be viewed by clicking anywhere on the brain or using keyboard arrows to move about the brain. A blue voxel indicates the injection (clicked location) and the color defined by the colormap defines the projection at varying strengths. For additional information, including a description of the tool, visit https://arxiv.org/pdf/2205.02291.pdf.
 
-![Gui image](gui.png)
+![Gui image](gui.png =250x250)
 
 Requirements include `allensdk` and `mcmodels` (https://github.com/AllenInstitute/allensdk, https://github.com/AllenInstitute/mouse_connectivity_models).
 
