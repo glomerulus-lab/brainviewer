@@ -2,6 +2,8 @@
 
 BrainViewer is an interactive connectivity visualization tool using a high resolution cortical mouse connectome. Each injection and resulting projection can be viewed by clicking anywhere on the brain or using keyboard arrows to move about the brain. A blue voxel indicates the injection (clicked location) and the color defined by the colormap defines the projection at varying strengths. For additional information, including a description of the tool, visit https://arxiv.org/pdf/2205.02291.pdf.
 
+![Gui image](gui.png)
+
 Requirements include `allensdk` and `mcmodels` (https://github.com/AllenInstitute/allensdk, https://github.com/AllenInstitute/mouse_connectivity_models).
 
 To run the interactive brainviewer, first run setup.py. This will preprocess the data.
@@ -12,10 +14,11 @@ Module which runs real_time_plot.py or img_look_up.py based on user specificatio
 Arguments:
 - method: "-rt" or "-pc"
 - testname: "topview" or "flatmap"
+- verbosity: "-v 1" or "-v 2"
 
 Example Invocation:
 ```
-python3 interactive_connectome.py -pc flatmap
+python3 interactive_connectome.py -pc flatmap -v 1
 ```
 
 ## real_time_plot.py
