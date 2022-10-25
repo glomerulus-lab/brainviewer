@@ -29,19 +29,19 @@ Arguments:
 
 Example Invocation:
 ```
-python3 interactive_connectome.py flatmap
+python3 real_time_plot.py flatmap
 ```
 
 
 ## img_look_up.py 
-Module to display an interactive topview or flatmap view of the mouse brain. Upon clicking the mouse brain, the related projection is **loaded from a file** and diplayed. 
+Module to display an interactive topview or flatmap view of the mouse brain. Upon clicking the mouse brain, the related projection is **loaded from a file** and displayed. 
 
 Arguments:
 - testname: "topview" or "flatmap"
 
 Example Invocation:
 ```
-python3 interactive_connectome2.py flatmap
+python3 img_look_up.py flatmap
 ```
 
 
